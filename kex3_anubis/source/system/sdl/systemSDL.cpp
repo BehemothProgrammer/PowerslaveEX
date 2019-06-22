@@ -413,7 +413,7 @@ void kexSystemSDL::SetWindowTitle(const char *string)
 
 void kexSystemSDL::SetWindowGrab(const bool bEnable)
 {
-    SDL_SetWindowGrab(window, (SDL_bool)bEnable);
+	SDL_SetWindowGrab(window, (SDL_bool)bEnable);
 }
 
 //
@@ -422,9 +422,7 @@ void kexSystemSDL::SetWindowGrab(const bool bEnable)
 
 void kexSystemSDL::WarpMouseToCenter(void)
 {
-    SDL_WarpMouseInWindow(window,
-                          (unsigned short)(kex::cSystem->VideoWidth()/2),
-                          (unsigned short)(kex::cSystem->VideoHeight()/2));
+    SDL_WarpMouseInWindow(window, (kex::cSystem->VideoWidth()/2), (kex::cSystem->VideoHeight()/2));
 }
 
 //

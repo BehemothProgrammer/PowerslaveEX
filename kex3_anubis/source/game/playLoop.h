@@ -60,6 +60,8 @@ public:
 
     static bool                 bPrintStats;
     static kexCvar              cvarCrosshair;
+    static kexCvar              cvarCamRoll;
+    static kexCvar              cvarViewBob;
     
 private:
     void                        FadeToBlack(void);

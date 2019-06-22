@@ -1249,6 +1249,7 @@ const kexMenuBindings::inputBinds_t kexMenuBindings::inputBinds1[] =
 {
     { "Attack",         IA_ATTACK,          "attack" },
     { "Jump",           IA_JUMP,            "jump" },
+    { "Crouch",         IA_CROUCH,          "crouch" },
     { "Forward",        IA_FORWARD,         "forward" },
     { "Backward",       IA_BACKWARD,        "backward" },
     { "Turn Left",      IA_LEFT,            "turnleft" },
@@ -2539,6 +2540,7 @@ private:
     kexMenuObjectOptionToggle       *toggleSpriteClip;
     kexMenuObjectOptionToggle       *toggleVBO;
     kexMenuObjectOptionToggle       *toggleGLFinish;
+    kexMenuObjectOptionToggle       *toggleAniso;
 END_MENU_CLASS();
 
 DECLARE_MENU_CLASS(kexMenuGraphics, MENU_GRAPHICS);
@@ -2556,7 +2558,7 @@ void kexMenuGraphics::Init(void)
 
     button = ALLOC_MENU_OBJECT(kexMenuObjectButton);
     button->x = 112;
-    button->y = 204;
+    button->y = 213;
     button->w = 96;
     button->h = 24;
     button->label = "Back";
@@ -2646,6 +2648,14 @@ void kexMenuGraphics::Init(void)
     toggleGLFinish->itemTextOffset = 8;
     toggleGLFinish->textAlignment = kexMenuObject::MITA_CENTER;
     toggleGLFinish->cvar = &kexRenderBackend::cvarRenderFinish;
+
+	toggleAniso = ALLOC_MENU_OBJECT(kexMenuObjectOptionToggle);
+	toggleAniso->x = 176;
+	toggleAniso->y = 194;
+	toggleAniso->w = 40;
+	toggleAniso->itemTextOffset = 8;
+	toggleAniso->textAlignment = kexMenuObject::MITA_CENTER;
+	toggleAniso->cvar = kex::cCvars->Get("gl_anisotropic");
 }
 
 //
@@ -2765,21 +2775,24 @@ void kexMenuGraphics::Display(void)
     kexGame::cLocal->DrawSmallString("Windowed", 16, 52, 1, false);
     kexGame::cLocal->DrawSmallString("VSync", 16, 70, 1, false);
     kexGame::cLocal->DrawSmallString("FOV", 16, 88, 1, false);
-    kexGame::cLocal->DrawSmallString("FXAA Antialiasing", 16, 106, 1, false);
-    kexGame::cLocal->DrawSmallString("Bloom", 16, 124, 1, false);
+	kexGame::cLocal->DrawSmallString("FXAA Antialiasing", 16, 106, 1, false);
+	kexGame::cLocal->DrawSmallString("Bloom", 16, 124, 1, false);
     kexGame::cLocal->DrawSmallString("Fix Sprite Clipping", 16, 142, 1, false);
     kexGame::cLocal->DrawSmallString("Use Vertex Buffers", 16, 160, 1, false);
     kexGame::cLocal->DrawSmallString("Force Open GL Sync", 16, 178, 1, false);
+	kexGame::cLocal->DrawSmallString("Anisotropic Filtering", 16, 196, 1, false);
 
     switch(selectedItem)
     {
     case 1:
-    case 2:
-        kexGame::cLocal->DrawSmallString("This option requires a restart", 160, 192, 1, true, 255, 32, 32);
+	case 2:
+	case 3:
+	case 10:
+		kexGame::cLocal->DrawSmallString("This option requires a restart", 160, 205, 1, true, 255, 32, 32);
         break;
 
     case 8:
-        kexGame::cLocal->DrawSmallString("This option requires a level restart", 160, 192, 1, true, 255, 32, 32);
+        kexGame::cLocal->DrawSmallString("This option requires a level restart", 160, 205, 1, true, 255, 32, 32);
         break;
     }
 
@@ -2800,7 +2813,8 @@ bool kexMenuGraphics::ProcessInput(inputEvent_t *ev)
         toggleBloom->ProcessInput(ev) ||
         toggleSpriteClip->ProcessInput(ev) ||
         toggleVBO->ProcessInput(ev) ||
-        toggleGLFinish->ProcessInput(ev))
+        toggleGLFinish->ProcessInput(ev) ||
+		toggleAniso->ProcessInput(ev))
     {
         return true;
     }
@@ -2828,8 +2842,10 @@ private:
     kexMenuObjectOptionScroll       *languages;
     kexMenuObjectOptionToggle       *toggleAutoAim;
     kexMenuObjectOptionToggle       *toggleIntroMovies;
-    kexMenuObjectOptionToggle       *toggleCrosshair;
-END_MENU_CLASS();
+	kexMenuObjectOptionToggle       *toggleCrosshair;
+	kexMenuObjectOptionToggle       *toggleCamRoll;
+	kexMenuObjectOptionToggle       *toggleViewBob;
+	END_MENU_CLASS();
 
 DECLARE_MENU_CLASS(kexMenuGameplay, MENU_GAMEPLAY);
 
@@ -2846,7 +2862,7 @@ void kexMenuGameplay::Init(void)
 
     button = ALLOC_MENU_OBJECT(kexMenuObjectButton);
     button->x = 112;
-    button->y = 160;
+    button->y = 178;
     button->w = 96;
     button->h = 24;
     button->label = "Back";
@@ -2888,6 +2904,22 @@ void kexMenuGameplay::Init(void)
     toggleCrosshair->itemTextOffset = 8;
     toggleCrosshair->textAlignment = kexMenuObject::MITA_CENTER;
     toggleCrosshair->cvar = &kexPlayLoop::cvarCrosshair;
+	
+	toggleCamRoll = ALLOC_MENU_OBJECT(kexMenuObjectOptionToggle);
+	toggleCamRoll->x = 188;
+	toggleCamRoll->y = 142;
+	toggleCamRoll->w = 40;
+	toggleCamRoll->itemTextOffset = 8;
+	toggleCamRoll->textAlignment = kexMenuObject::MITA_CENTER;
+	toggleCamRoll->cvar = &kexPlayLoop::cvarCamRoll;
+
+	toggleViewBob = ALLOC_MENU_OBJECT(kexMenuObjectOptionToggle);
+	toggleViewBob->x = 188;
+	toggleViewBob->y = 160;
+	toggleViewBob->w = 40;
+	toggleViewBob->itemTextOffset = 8;
+	toggleViewBob->textAlignment = kexMenuObject::MITA_CENTER;
+	toggleViewBob->cvar = &kexPlayLoop::cvarViewBob;
 }
 
 //
@@ -2945,13 +2977,15 @@ void kexMenuGameplay::Display(void)
         (float)kexRender::cScreen->SCREEN_WIDTH,
         (float)kexRender::cScreen->SCREEN_HEIGHT, 0, 0, 0, 128);
 
-    kexGame::cMenuPanel->DrawPanel(32, 24, 256, 172, 4);
+    kexGame::cMenuPanel->DrawPanel(32, 24, 256, 190, 4);
     kexGame::cMenuPanel->DrawInset(40, 32, 238, 16);
 
     kexGame::cLocal->DrawSmallString("Language", 48, 72, 1, false);
     kexGame::cLocal->DrawSmallString("Auto Aiming", 48, 90, 1, false);
-    kexGame::cLocal->DrawSmallString("Play Intro Movies", 46, 110, 1, false);
+    kexGame::cLocal->DrawSmallString("Play Intro Movies", 46, 108, 1, false);
     kexGame::cLocal->DrawSmallString("Crosshair", 48, 126, 1, false);
+    kexGame::cLocal->DrawSmallString("Camera Roll", 48, 144, 1, false);
+    kexGame::cLocal->DrawSmallString("View Bobbing", 48, 162, 1, false);
 
     DrawItems();
 
@@ -2967,7 +3001,9 @@ bool kexMenuGameplay::ProcessInput(inputEvent_t *ev)
     if( languages->ProcessInput(ev) ||
         toggleAutoAim->ProcessInput(ev) ||
         toggleIntroMovies->ProcessInput(ev) ||
-        toggleCrosshair->ProcessInput(ev))
+        toggleCrosshair->ProcessInput(ev) ||
+		toggleCamRoll->ProcessInput(ev) ||
+		toggleViewBob->ProcessInput(ev))
     {
         return true;
     }
@@ -3278,6 +3314,13 @@ void kexMenuAbout::OnBack(kexMenuObject *menuObject)
 
 void kexMenuAbout::Display(void)
 {
+	float colLeftX = 48.0f;
+	float colRightX = 160.0f;
+	float colY = 104.0f;
+	float colSpacingY = 6.4f;
+	float textScale = 0.6f;
+	kexStr titleStr;
+
     kexRender::cScreen->SetOrtho();
     
     kexRender::cScreen->DrawStretchPic(kexRender::cTextures->whiteTexture, 0, 0,
@@ -3294,24 +3337,34 @@ void kexMenuAbout::Display(void)
 
     DrawItems();
 
-    kexGame::cLocal->DrawSmallString("About Powerslave EX", 160, 12, 1, true);
+	titleStr = kexStr::Format("%s %i.%i",
+		KEX_GAME_TITLE,
+		KEX_GAME_VERSION,
+		KEX_GAME_SUBVERSION);
 
-    kexGame::cLocal->DrawSmallString("Programming:", 48, 104, 0.75f, false);
-    kexGame::cLocal->DrawSmallString("Samuel Villarreal", 168, 104, 0.75f, false);
+    kexGame::cLocal->DrawSmallString(titleStr, 160, 12, 1, true);
 
-    kexGame::cLocal->DrawSmallString("Linux Port:", 48, 120, 0.75f, false);
-    kexGame::cLocal->DrawSmallString("Zohar Malamant", 168, 120, 0.75f, false);
-
-    kexGame::cLocal->DrawSmallString("Additional Art:", 48, 136, 0.75f, false);
-    kexGame::cLocal->DrawSmallString("Daniel Lazar", 168, 136, 0.75f, false);
-
-    kexGame::cLocal->DrawSmallString("Additional Design:", 48, 152, 0.75f, false);
-    kexGame::cLocal->DrawSmallString("Samuel Villarreal", 168, 152, 0.75f, false);
-
-    kexGame::cLocal->DrawSmallString("Special Thanks:", 48, 168, 0.75f, false);
-    kexGame::cLocal->DrawSmallString("James Haley", 168, 168, 0.75f, false);
-    kexGame::cLocal->DrawSmallString("Geoff Wakefield", 168, 176, 0.75f, false);
-    kexGame::cLocal->DrawSmallString("Lobotomy Software", 168, 184, 0.75f, false);
+	kexGame::cLocal->DrawSmallString("Programming:", colLeftX, colY, textScale, false);
+	kexGame::cLocal->DrawSmallString("Samuel Villarreal", colRightX, colY, textScale, false);
+	colY += colSpacingY * 2;
+	kexGame::cLocal->DrawSmallString("v1.1 Update:", colLeftX, colY, textScale, false);
+    kexGame::cLocal->DrawSmallString("Behemoth Programmer", colRightX, colY, textScale, false);
+	colY += colSpacingY * 2;
+    kexGame::cLocal->DrawSmallString("Linux Port:", colLeftX, colY, textScale, false);
+    kexGame::cLocal->DrawSmallString("Zohar Malamant", colRightX, colY, textScale, false);
+	colY += colSpacingY * 2;
+    kexGame::cLocal->DrawSmallString("Additional Art:", colLeftX, colY, textScale, false);
+    kexGame::cLocal->DrawSmallString("Daniel Lazar", colRightX, colY, textScale, false);
+	colY += colSpacingY * 2;
+    kexGame::cLocal->DrawSmallString("Additional Design:", colLeftX, colY, textScale, false);
+    kexGame::cLocal->DrawSmallString("Samuel Villarreal", colRightX, colY, textScale, false);
+	colY += colSpacingY * 2;
+    kexGame::cLocal->DrawSmallString("Special Thanks:", colLeftX, colY, textScale, false);
+    kexGame::cLocal->DrawSmallString("James Haley", colRightX, colY, textScale, false);
+	colY += colSpacingY;
+	kexGame::cLocal->DrawSmallString("Geoff Wakefield", colRightX, colY, textScale, false);
+	colY += colSpacingY;
+	kexGame::cLocal->DrawSmallString("Lobotomy Software", colRightX, colY, textScale, false);
 }
 
 //

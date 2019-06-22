@@ -29,7 +29,8 @@ typedef enum
     BC_WEAPONLEFT   = BIT(9),
     BC_USE          = BIT(10),
     BC_MAPZOOMIN    = BIT(11),
-    BC_MAPZOOMOUT   = BIT(12)
+    BC_MAPZOOMOUT   = BIT(12),
+	BC_CROUCH		= BIT(13),
 } buttonCommand_t;
 
 class kexPlayerCmd

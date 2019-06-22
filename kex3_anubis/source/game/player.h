@@ -30,8 +30,15 @@ typedef enum
     PF_ELECTROCUTE      = BIT(8),
     PF_DEAD             = BIT(9),
     PF_GOD              = BIT(10),
-    PF_STUNNED          = BIT(11)
+    PF_STUNNED          = BIT(11),
+    PF_CROUCHING        = BIT(12),
 } playerFlags_t;
+
+typedef enum
+{
+	PCF_AMMO = BIT(0),
+	PCF_GOD = BIT(1),
+} playerCheatFlags_t;
 
 typedef enum
 {
@@ -65,9 +72,10 @@ public:
 
     kexPlayer                       *Owner(void) { return owner; }
     unsigned int                    &PlayerFlags(void) { return playerFlags; }
-
+	float							&CrouchViewZ(void) { return crouchViewZ; }
 private:
     void                            Jump(kexPlayerCmd *cmd);
+    void                            Crouch(kexPlayerCmd *cmd);
     void                            GroundMove(kexPlayerCmd *cmd);
     void                            FlyMove(kexPlayerCmd *cmd);
     void                            WaterMove(kexPlayerCmd *cmd);
@@ -83,6 +91,8 @@ private:
     kexVec3                         oldMovement;
     int                             lavaTicks;
     int                             slimeTicks;
+	float							crouchViewZ;
+
 END_KEX_CLASS();
 
 //-----------------------------------------------------------------------------
@@ -123,7 +133,8 @@ public:
     void                        SetActor(kexPuppet *_actor) { actor = _actor; }
     void                        ClearActor(void) { actor = NULL; }
 
-    int16_t                     &Ankahs(void) { return ankahs; }
+	unsigned int                &CheatFlags(void) { return cheatFlags; }
+	int16_t                     &Ankahs(void) { return ankahs; }
     int16_t                     &AnkahFlags(void) { return ankahFlags; }
     int16_t                     &Artifacts(void) { return artifacts; }
     int16_t                     &QuestItems(void) { return questItems; }
@@ -179,6 +190,7 @@ private:
     bool                        weapons[NUMPLAYERWEAPONS];
     int16_t                     ammo[NUMPLAYERWEAPONS];
 
+	unsigned int                cheatFlags;
     int16_t                     artifacts;
     int16_t                     keys;
     int16_t                     questItems;

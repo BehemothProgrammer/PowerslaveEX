@@ -76,6 +76,7 @@ void kexScriptObjGame::Init(void)
     e->RegisterEnumValue("EnumPlayerButtons", "BC_USE", BC_USE);
     e->RegisterEnumValue("EnumPlayerButtons", "BC_MAPZOOMIN", BC_MAPZOOMIN);
     e->RegisterEnumValue("EnumPlayerButtons", "BC_MAPZOOMOUT", BC_MAPZOOMOUT);
+    e->RegisterEnumValue("EnumPlayerButtons", "BC_CROUCH", BC_CROUCH);
 }
 
 //

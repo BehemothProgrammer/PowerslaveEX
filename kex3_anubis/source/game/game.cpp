@@ -42,6 +42,7 @@ kexMenu *kexGameLocal::menus[NUMMENUS];
 bool kexGameLocal::bShowSoundStats = false;
 
 kexCvar kexGameLocal::cvarShowMovieIntro("g_showintromovie", CVF_BOOL|CVF_CONFIG, "1", "Play intro movies on startup");
+kexCvar kexGameLocal::cvarShowHUD("g_showhud", CVF_BOOL|CVF_CONFIG, "1", "Show HUD");
 
 //=============================================================================
 //
@@ -102,10 +103,43 @@ COMMAND(noclip)
 }
 
 //
-// moses
+// infinite ammo
 //
 
-COMMAND(moses)
+COMMAND(infiniteammo)
+{
+	kexGameLocal *game = kexGame::cLocal;
+	kexPuppet *puppet;
+
+	if (kex::cCommands->GetArgc() < 1)
+	{
+		return;
+	}
+
+	if (game->GameState() != GS_LEVEL || game->Player()->Actor() == NULL)
+	{
+		return;
+	}
+
+	puppet = game->Player()->Actor();
+
+	if (game->Player()->CheatFlags() & PCF_AMMO)
+	{
+		game->PlayLoop()->Print("Infinite Ammo off");
+		game->Player()->CheatFlags() &= ~PCF_AMMO;
+	}
+	else
+	{
+		game->PlayLoop()->Print("Infinite Ammo on");
+		game->Player()->CheatFlags() |= PCF_AMMO;
+	}
+}
+
+//
+// god (moses)
+//
+
+COMMAND(god)
 {
     kexGameLocal *game = kexGame::cLocal;
     kexPuppet *puppet;
@@ -122,17 +156,19 @@ COMMAND(moses)
 
     puppet = game->Player()->Actor();
 
-    if(puppet->PlayerFlags() & PF_GOD)
+    if(puppet->PlayerFlags() & PF_GOD || game->Player()->CheatFlags() & PCF_GOD)
     {
         game->PlayLoop()->Print("god mode off");
         puppet->PlayerFlags() &= ~PF_GOD;
+		game->Player()->CheatFlags() &= ~PCF_GOD;
         puppet->FindSector(puppet->Origin());
     }
     else
     {
         game->PlayLoop()->Print("god mode on");
         puppet->PlayerFlags() |= PF_GOD;
-        puppet->Velocity().Clear();
+		game->Player()->CheatFlags() |= PCF_GOD;
+		puppet->Velocity().Clear();
     }
 }
 
@@ -521,8 +557,8 @@ void kexGameLocal::Init(void)
     bool bHasUserConfig;
 
     kex::cActions->AddAction(IA_ATTACK, "attack");
-    kex::cActions->AddAction(IA_JUMP, "jump");
-    kex::cActions->AddAction(IA_FORWARD, "forward");
+	kex::cActions->AddAction(IA_JUMP, "jump");
+	kex::cActions->AddAction(IA_FORWARD, "forward");
     kex::cActions->AddAction(IA_BACKWARD, "backward");
     kex::cActions->AddAction(IA_LEFT, "turnleft");
     kex::cActions->AddAction(IA_RIGHT, "turnright");
@@ -533,7 +569,8 @@ void kexGameLocal::Init(void)
     kex::cActions->AddAction(IA_USE, "+use");
     kex::cActions->AddAction(IA_MAPZOOMIN, "mapzoomin");
     kex::cActions->AddAction(IA_MAPZOOMOUT, "mapzoomout");
-    
+	kex::cActions->AddAction(IA_CROUCH, "crouch");
+
     bHasUserConfig = kex::cSystem->ReadConfigFile("config.cfg");
 
     kex::cPakFiles->LoadZipFile("game.kpf");
@@ -1441,10 +1478,10 @@ bool kexGameLocal::LoadPersistentData(persistentData_t *data, int &currentMap, c
     version = loadFile.Read32();
     subVersion = loadFile.Read32();
 
-    if(version != GAME_VERSION || subVersion != GAME_SUBVERSION)
-    {
-        return false;
-    }
+    //if(version != GAME_VERSION || subVersion != GAME_SUBVERSION)
+    //{
+    //    return false;
+    //}
 
     for(int i = 0; i < NUMPLAYERWEAPONS; ++i)
     {
@@ -1493,10 +1530,10 @@ bool kexGameLocal::LoadGame(const int slot)
     version = loadFile.Read32();
     subVersion = loadFile.Read32();
 
-    if(version != GAME_VERSION || subVersion != GAME_SUBVERSION)
-    {
-        return false;
-    }
+    //if(version != GAME_VERSION || subVersion != GAME_SUBVERSION)
+    //{
+    //    return false;
+    //}
 
     for(int i = 0; i < NUMPLAYERWEAPONS; ++i)
     {

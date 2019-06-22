@@ -199,6 +199,8 @@ void kexPlayerWeapon::UpdateSprite(void)
 
     frame = &anim->frames[frameID];
     ticks += (1.0f / (float)frame->delay) * 0.5f;
+	if (state == WS_RAISE || state == WS_LOWER || state == WS_HOLDSTER)
+		ticks *= 2;
 
     if(frame->delay == 0)
     {
@@ -360,7 +362,9 @@ void kexPlayerWeapon::DrawAnimFrame(spriteAnim_t *sprAnim)
         sprite->Texture()->Bind();
 
         x += bob_x + weaponInfo->offsetX;
-        y += bob_y + weaponInfo->offsetY;
+		y += bob_y + weaponInfo->offsetY;
+		if (!kexGame::cLocal->cvarShowHUD.GetBool())
+			y += 24.0f;
         x += (owner->Actor()->Roll()*64);
 
         if(!(frame->flags & SFF_FULLBRIGHT))

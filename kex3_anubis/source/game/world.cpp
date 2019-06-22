@@ -65,6 +65,18 @@ void kexWorld::ReadTextures(kexBinFile &mapfile, const unsigned int count)
         return;
     }
 
+	texFilterMode_t filter;
+	int iTexFilter = CLAMP(kex::cCvars->Get("gl_filter")->GetInt(), 0, 1);
+	switch (iTexFilter)
+	{
+	case 1:
+		filter = TF_LINEAR;
+		break;
+	default:
+		filter = TF_NEAREST;
+		break;
+	}
+
     animPics = (animPic_t*)Mem_Calloc(sizeof(animPic_t) * count, hb_world);
 
     len = mapfile.Read16();
@@ -79,7 +91,7 @@ void kexWorld::ReadTextures(kexBinFile &mapfile, const unsigned int count)
             str += c;
         }
 
-        skyTexture = kexRender::cTextures->Cache(str.c_str(), TC_REPEAT, TF_NEAREST);
+        skyTexture = kexRender::cTextures->Cache(str.c_str(), TC_REPEAT, filter);
     }
     else
     {
@@ -108,7 +120,7 @@ void kexWorld::ReadTextures(kexBinFile &mapfile, const unsigned int count)
                 str += c;
             }
 
-            textures[i] = kexRender::cTextures->Cache(str.c_str(), TC_REPEAT, TF_NEAREST);
+            textures[i] = kexRender::cTextures->Cache(str.c_str(), TC_REPEAT, filter);
 
             if((dict = kexGame::cLocal->AnimPicDefs().GetEntry(str.c_str())))
             {
@@ -141,7 +153,7 @@ void kexWorld::ReadTextures(kexBinFile &mapfile, const unsigned int count)
                     for(uint j = 0; j < pics.Length(); ++j)
                     {
                         animPics[i].textures[j+1] =
-                            kexRender::cTextures->Cache(pics[j].c_str(), TC_REPEAT, TF_NEAREST);
+                            kexRender::cTextures->Cache(pics[j].c_str(), TC_REPEAT, filter);
                     }
                 }
             }

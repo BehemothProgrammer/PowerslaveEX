@@ -38,3 +38,7 @@ tags
 .DS_store
 /kex3_anubis/msvc/*.ncb
 /kex3_anubis/msvc/*.suo
+/kex3_anubis/angelscript
+/kex3_anubis/lpng1612
+/kex3_anubis/msvc
+/kex3_anubis/ogg

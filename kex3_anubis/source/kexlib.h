@@ -22,7 +22,7 @@
 
 #define KEX_GAME_TITLE          "Powerslave EX"
 #define KEX_GAME_VERSION        1
-#define KEX_GAME_SUBVERSION     0
+#define KEX_GAME_SUBVERSION     1
 
 // narrow down the windows preprocessor bullshit down to just one macro define
 #if defined(__WIN32__) || defined(__WIN32) || defined(_WIN32_) || defined(_WIN32) || defined(WIN32)
@@ -118,6 +118,10 @@ typedef union
 
 #ifndef BETWEEN
 #define BETWEEN(l,u,x) ((l)>(x)?(l):(x)>(u)?(u):(x))
+#endif
+
+#ifndef CLAMP
+#define CLAMP(v,min,max) (v < min) ? min : ((v > max) ? max : v)
 #endif
 
 #ifndef BIT

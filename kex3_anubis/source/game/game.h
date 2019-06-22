@@ -43,6 +43,7 @@ typedef enum
     IA_USE,
     IA_MAPZOOMIN,
     IA_MAPZOOMOUT,
+	IA_CROUCH,
     
     NUMINPUTACTIONS
 } inputActions_t;
@@ -242,6 +243,7 @@ public:
     static kexMenu                  *menus[NUMMENUS];
     static bool                     bShowSoundStats;
     static kexCvar                  cvarShowMovieIntro;
+    static kexCvar                  cvarShowHUD;
     
 private:
     void                            LoadNewMap(void);

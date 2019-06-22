@@ -1693,7 +1693,10 @@ void kexRenderScene::Prepare(kexRenderView &view)
     
     h = kex::cSystem->VideoHeight();
     
-    clipY = h - (int)((float)h / (240.0f / 24.0f));
+	if (kexGame::cLocal->cvarShowHUD.GetBool())
+		clipY = h - (int)((float)h / (240.0f / 24.0f));
+	else
+		clipY = h;
     
     waterFaces.Reset();
 }

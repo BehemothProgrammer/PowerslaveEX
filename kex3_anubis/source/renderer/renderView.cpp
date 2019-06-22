@@ -146,7 +146,7 @@ void kexRenderView::SetupFromPlayer(kexPlayer *player)
     pitch = actor->Pitch();
     roll = actor->Roll();
     origin = actor->Origin();
-    origin.z += player->ViewZ() + player->Bob() + player->LandTime() + player->StepViewZ();
+    origin.z += player->ViewZ() + player->Bob() + player->LandTime() + player->StepViewZ() + player->Actor()->CrouchViewZ();
 
     if(player->ShakeTime() > 0 && (int)player->Actor()->Velocity().z == 0)
     {

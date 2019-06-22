@@ -427,6 +427,34 @@ void kexPuppet::Jump(kexPlayerCmd *cmd)
 }
 
 //
+// kexPuppet::Crouch
+//
+
+void kexPuppet::Crouch(kexPlayerCmd *cmd)
+{
+	//if (cmd->Buttons() & BC_CROUCH)
+	//{
+	//	if (!(playerFlags & PF_CROUCHING))
+	//	{
+	//		playerFlags |= PF_CROUCHING;
+	//		crouchViewZ = -32.0f;
+	//	}
+
+	//	if (origin.z - floorHeight >= 1)
+	//	{
+	//		playerFlags &= ~PF_CROUCHING;
+	//		crouchViewZ = 0.0f;
+	//		return;
+	//	}
+	//}
+	//else
+	//{
+	//	playerFlags &= ~PF_CROUCHING;
+	//	crouchViewZ = 0.0f;
+	//}
+}
+
+//
 // kexPuppet::GroundMove
 //
 
@@ -438,7 +466,8 @@ void kexPuppet::GroundMove(kexPlayerCmd *cmd)
     // update angles
     yaw += cmd->Angles()[0];
     pitch += cmd->Angles()[1];
-    roll -= (cmd->Angles()[0] * 0.25f);
+	if (kexPlayLoop::cvarCamRoll.GetBool())
+		roll -= (cmd->Angles()[0] * 0.25f);
     
     kexMath::Clamp(pitch.an, kexMath::Deg2Rad(-90), kexMath::Deg2Rad(90));
     kexMath::Clamp(roll.an, -0.1f, 0.1f);
@@ -451,6 +480,9 @@ void kexPuppet::GroundMove(kexPlayerCmd *cmd)
 
     // handle jumping
     Jump(cmd);
+
+	// handle crouching
+	Crouch(cmd);
     
     // check for drop-offs
     if(origin.z > floorHeight)
@@ -767,18 +799,20 @@ void kexPuppet::TryClimbOutOfWater(void)
 void kexPuppet::WaterMove(kexPlayerCmd *cmd)
 {
     kexVec3 forward, right;
+    kexVec3 addVelocity;
     mapSector_t *oldSector;
     float swimSpeed;
     
     yaw += cmd->Angles()[0];
     pitch += cmd->Angles()[1];
-    roll -= (cmd->Angles()[0] * 0.25f);
+	if (kexPlayLoop::cvarCamRoll.GetBool())
+		roll -= (cmd->Angles()[0] * 0.25f);
     
     kexMath::Clamp(pitch.an, kexMath::Deg2Rad(-90), kexMath::Deg2Rad(90));
     kexMath::Clamp(roll.an, -0.1f, 0.1f);
 
     kexVec3::ToAxis(&forward, NULL, NULL, yaw, pitch, 0);
-    kexVec3::ToAxis(NULL, NULL, &right, yaw, 0, 0);
+	kexVec3::ToAxis(NULL, NULL, &right, yaw, 0, 0);
 
     velocity *= friction;
 
@@ -808,44 +842,57 @@ void kexPuppet::WaterMove(kexPlayerCmd *cmd)
 
     if(cmd->Buttons() & BC_FORWARD)
     {
-        velocity += (forward * swimSpeed);
+		addVelocity += (forward * swimSpeed);
     }
     else if(cmd->Movement()[0] > 0)
     {
-        velocity += (forward * cmd->Movement()[0]) * swimSpeed;
+		addVelocity += (forward * cmd->Movement()[0]) * swimSpeed;
     }
 
     if(cmd->Buttons() & BC_BACKWARD)
     {
-        velocity -= (forward * (swimSpeed*0.5f));
+		addVelocity -= (forward * (swimSpeed*0.5f));
     }
     else if(cmd->Movement()[0] < 0)
     {
-        velocity += (forward * cmd->Movement()[0]) * (swimSpeed*0.5f);
+		addVelocity += (forward * cmd->Movement()[0]) * (swimSpeed*0.5f);
     }
+
+	if (cmd->Buttons() & BC_JUMP)
+	{
+		if (addVelocity.z < swimSpeed)
+			addVelocity.z = swimSpeed;
+	}
+	else if (cmd->Buttons() & BC_CROUCH)
+	{
+		if (addVelocity.z > -swimSpeed)
+			addVelocity.z = -swimSpeed;
+	}
 
     if(!(cmd->Buttons() & (BC_STRAFELEFT|BC_STRAFERIGHT)))
     {
         if(cmd->Movement()[1] != 0)
         {
-            velocity.x += (right.x * cmd->Movement()[1]) * (swimSpeed*0.5f);
-            velocity.y += (right.y * cmd->Movement()[1]) * (swimSpeed*0.5f);
+			addVelocity.x += (right.x * cmd->Movement()[1]) * (swimSpeed*0.5f);
+			addVelocity.y += (right.y * cmd->Movement()[1]) * (swimSpeed*0.5f);
         }
     }
 
     if(cmd->Buttons() & BC_STRAFELEFT)
     {
-        velocity.x -= right.x * (swimSpeed*0.5f);
-        velocity.y -= right.y * (swimSpeed*0.5f);
+		addVelocity.x -= right.x * (swimSpeed*0.5f);
+		addVelocity.y -= right.y * (swimSpeed*0.5f);
     }
 
     if(cmd->Buttons() & BC_STRAFERIGHT)
     {
-        velocity.x += right.x * (swimSpeed*0.5f);
-        velocity.y += right.y * (swimSpeed*0.5f);
+		addVelocity.x += right.x * (swimSpeed*0.5f);
+		addVelocity.y += right.y * (swimSpeed*0.5f);
     }
 
-    if(sector->ceilingFace->flags & FF_WATER)
+	velocity += addVelocity;
+
+	if(sector->ceilingFace->flags & FF_WATER)
     {
         float waterZ = kexGame::cLocal->CModel()->GetCeilingHeight(origin, sector);
         float waterheight = waterZ - origin.z;
@@ -898,7 +945,8 @@ void kexPuppet::WaterMove(kexPlayerCmd *cmd)
 void kexPuppet::FlyMove(kexPlayerCmd *cmd)
 {
     kexVec3 forward, right;
-    
+	kexVec3 addVelocity;
+
     yaw += cmd->Angles()[0];
     pitch += cmd->Angles()[1];
 
@@ -924,26 +972,39 @@ void kexPuppet::FlyMove(kexPlayerCmd *cmd)
 
     if(cmd->Buttons() & BC_FORWARD)
     {
-        velocity += (forward * PMOVE_SPEED);
+		addVelocity += (forward * PMOVE_SPEED);
     }
 
     if(cmd->Buttons() & BC_BACKWARD)
     {
-        velocity -= (forward * PMOVE_SPEED);
+		addVelocity -= (forward * PMOVE_SPEED);
     }
 
     if(cmd->Buttons() & BC_STRAFELEFT)
     {
-        velocity.x -= right.x * PMOVE_SPEED;
-        velocity.y -= right.y * PMOVE_SPEED;
+		addVelocity.x -= right.x * PMOVE_SPEED;
+		addVelocity.y -= right.y * PMOVE_SPEED;
     }
 
     if(cmd->Buttons() & BC_STRAFERIGHT)
     {
-        velocity.x += right.x * PMOVE_SPEED;
-        velocity.y += right.y * PMOVE_SPEED;
+		addVelocity.x += right.x * PMOVE_SPEED;
+		addVelocity.y += right.y * PMOVE_SPEED;
     }
 
+	if (cmd->Buttons() & BC_JUMP)
+	{
+		if (addVelocity.z < PMOVE_SPEED)
+			addVelocity.z = PMOVE_SPEED;
+	}
+
+	if (cmd->Buttons() & BC_CROUCH)
+	{
+		if (addVelocity.z > -PMOVE_SPEED)
+			addVelocity.z = -PMOVE_SPEED;
+	}
+
+	velocity += addVelocity;
     movement = velocity;
     
     if(!(playerFlags & PF_NOCLIP))
@@ -1166,18 +1227,21 @@ void kexPlayer::Ready(void)
     stepViewZ = 0;
     keys = 0;
     viewZ = 64.0f;
-    airSupply = 64;
+	airSupply = 64;
     airSupplyTime = 0;
     lockTime = 0;
     shakeTime = 0;
     shakeVector.Clear();
 
     weapon.ChangeAnim(WS_RAISE);
-    
+
     if(actor)
     {
         actor->Health() = health;
-        
+		actor->CrouchViewZ() = 0.0f;
+		if (cheatFlags & PCF_GOD)
+			actor->PlayerFlags() |= PF_GOD;
+
         if(kexPuppet::bScheduleNextMapWarp == true)
         {
             kexPuppet::bScheduleNextMapWarp = false;
@@ -1195,6 +1259,16 @@ void kexPlayer::Ready(void)
 
 void kexPlayer::UpdateViewBob(void)
 {
+	if (!kexPlayLoop::cvarViewBob.GetBool())
+	{
+		bob = 0.0f;
+		bobTime = 0.0f;
+		bobSpeed = 0.0f;
+		landTime = 0.0f;
+		stepViewZ = 0.0f;
+		return;
+	}
+
     if(actor->Origin().z > actor->FloorHeight() &&
         !(actor->Flags() & AF_INWATER) && !(actor->PlayerFlags() & PF_FLOATING))
     {
@@ -1434,7 +1508,7 @@ bool kexPlayer::GiveWeapon(const int weaponID, const bool bAutoSwitch)
         return false;
     }
     
-    if(weapons[weaponID])
+	if(weapons[weaponID])
     {
         return false;
     }
@@ -1468,7 +1542,7 @@ bool kexPlayer::WeaponOwned(const int weaponID)
 
 void kexPlayer::ConsumeAmmo(const int16_t amount)
 {
-    if(amount < 0)
+    if(cheatFlags & PCF_AMMO || amount < 0)
     {
         return;
     }

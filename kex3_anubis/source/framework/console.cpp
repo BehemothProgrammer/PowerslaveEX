@@ -642,7 +642,8 @@ void kexConsole::Draw(void)
     if(!bOverlay)
     {
         kexCpuVertList *vl = kexRender::cVertList;
-        kexStr versionStr;
+        kexStr engineVersionStr;
+        kexStr gameVersionStr;
 
         kexRender::cTextures->whiteTexture->Bind();
         vl->BindDrawPointers();
@@ -655,14 +656,23 @@ void kexConsole::Draw(void)
 
         vl->DrawElements();
 
-        versionStr = kexStr::Format("%s %i.%i (%s)",
+        engineVersionStr = kexStr::Format("%s %i.%i (%s)",
                                     KEX_ENGINE_TITLE,
                                     KEX_ENGINE_VERSION,
                                     KEX_ENGINE_SUBVERSION,
                                     KEX_ENGINE_BRANCH);
 
-        color = RGBA(255, 0, 0, 255);
-        font->DrawString(versionStr, w - font->StringWidth(versionStr, 1, 0) - 8, h-34, 1, false, color);
+		color = RGBA(255, 0, 0, 255);
+		font->DrawString(engineVersionStr, w - font->StringWidth(engineVersionStr, 1, 0) - 8, h - 50, 1, false, color);
+
+		gameVersionStr = kexStr::Format("%s %i.%i (%s)",
+			KEX_GAME_TITLE,
+			KEX_GAME_VERSION,
+			KEX_GAME_SUBVERSION,
+			__DATE__);
+
+		color = RGBA(255, 255, 0, 255);
+		font->DrawString(gameVersionStr, w - font->StringWidth(gameVersionStr, 1, 0) - 8, h - 34, 1, false, color);
 
         color = RGBA(255, 255, 255, 255);
         font->DrawString("> ", 0, h-15, 1, false);

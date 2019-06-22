@@ -21,8 +21,8 @@
 #include "kexlib.h"
 #include "renderMain.h"
 
-kexCvar cvarGLFilter("gl_filter", CVF_INT|CVF_CONFIG, "0", "Texture filter mode");
-kexCvar cvarGLAnisotropic("gl_anisotropic", CVF_INT|CVF_CONFIG, "0", "TODO");
+kexCvar cvarGLFilter("gl_filter", CVF_INT|CVF_CONFIG, "0", "Texture filter mode. 0: Nearest, 1: Linear (Requires Restart)");
+kexCvar cvarGLAnisotropic("gl_anisotropic", CVF_INT|CVF_CONFIG, "1", "Enable Anisotropic filtering (Requires Restart)");
 
 kexHeapBlock kexTexture::hb_texture("texture", false, NULL, NULL);
 

@@ -23,6 +23,8 @@
 #include "localization.h"
 
 kexCvar kexPlayLoop::cvarCrosshair("g_showcrosshair", CVF_BOOL|CVF_CONFIG, "0", "Displays crosshair");
+kexCvar kexPlayLoop::cvarCamRoll("g_camroll", CVF_BOOL|CVF_CONFIG, "0", "Camera view rolling");
+kexCvar kexPlayLoop::cvarViewBob("g_viewbob", CVF_BOOL|CVF_CONFIG, "1", "Camera view bobbing");
 
 //
 // gprint
@@ -284,7 +286,8 @@ void kexPlayLoop::Draw(void)
     
     DrawAutomap();
     
-    hud.Display();
+	if (kexGame::cLocal->cvarShowHUD.GetBool())
+		hud.Display();
 
     DrawFadeIn();
 
