@@ -872,7 +872,10 @@ void kexRenderScene::DrawWater(kexRenderView &view)
     }
 
     kexRender::cBackend->SetBlend(GLSRC_SRC_ALPHA, GLDST_ONE_MINUS_SRC_ALPHA);
-    kexRender::cBackend->SetState(GLSTATE_CULL, true);
+	if (kexGame::cLocal->Player()->Actor()->Flags() & AF_INWATER)
+		kexRender::cBackend->SetState(GLSTATE_CULL, false);
+	else
+		kexRender::cBackend->SetState(GLSTATE_CULL, true);
     kexRender::cBackend->SetDepthMask(0);
     
     for(uint i = 0; i < waterFaces.CurrentLength(); ++i)

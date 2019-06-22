@@ -43,6 +43,9 @@ bool kexGameLocal::bShowSoundStats = false;
 
 kexCvar kexGameLocal::cvarShowMovieIntro("g_showintromovie", CVF_BOOL|CVF_CONFIG, "1", "Play intro movies on startup");
 kexCvar kexGameLocal::cvarShowHUD("g_showhud", CVF_BOOL|CVF_CONFIG, "1", "Show HUD");
+kexCvar kexGameLocal::cvarShowHUDFlashes("g_showhudflashes", CVF_BOOL|CVF_CONFIG, "1", "Show HUD Flashes");
+kexCvar kexGameLocal::cvarFastWeaponTransitions("g_fastweapontransitions", CVF_BOOL|CVF_CONFIG, "0", "Raise, Lower, and Holster weapon animations will be twice as fast");
+kexCvar kexGameLocal::cvarBetterAutoAim("g_betterautoaim", CVF_BOOL|CVF_CONFIG, "0", "Auto aim size is twice as big");
 
 //=============================================================================
 //
@@ -170,6 +173,39 @@ COMMAND(god)
 		game->Player()->CheatFlags() |= PCF_GOD;
 		puppet->Velocity().Clear();
     }
+}
+
+COMMAND(moses)
+{
+	kexGameLocal *game = kexGame::cLocal;
+	kexPuppet *puppet;
+
+	if (kex::cCommands->GetArgc() < 1)
+	{
+		return;
+	}
+
+	if (game->GameState() != GS_LEVEL || game->Player()->Actor() == NULL)
+	{
+		return;
+	}
+
+	puppet = game->Player()->Actor();
+
+	if (puppet->PlayerFlags() & PF_GOD || game->Player()->CheatFlags() & PCF_GOD)
+	{
+		game->PlayLoop()->Print("god mode off");
+		puppet->PlayerFlags() &= ~PF_GOD;
+		game->Player()->CheatFlags() &= ~PCF_GOD;
+		puppet->FindSector(puppet->Origin());
+	}
+	else
+	{
+		game->PlayLoop()->Print("god mode on");
+		puppet->PlayerFlags() |= PF_GOD;
+		game->Player()->CheatFlags() |= PCF_GOD;
+		puppet->Velocity().Clear();
+	}
 }
 
 //

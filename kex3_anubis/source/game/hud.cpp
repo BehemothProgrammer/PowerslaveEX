@@ -568,7 +568,8 @@ void kexHud::Display(void)
 
     DrawAbilityIcons();
 
-    DrawFlash();
+	if (kexGame::cLocal->cvarShowHUDFlashes.GetBool())
+		DrawFlash();
 
     DrawMessages();
 

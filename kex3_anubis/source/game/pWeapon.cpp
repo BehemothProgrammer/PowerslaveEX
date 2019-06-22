@@ -199,7 +199,7 @@ void kexPlayerWeapon::UpdateSprite(void)
 
     frame = &anim->frames[frameID];
     ticks += (1.0f / (float)frame->delay) * 0.5f;
-	if (state == WS_RAISE || state == WS_LOWER || state == WS_HOLDSTER)
+	if (kexGame::cLocal->cvarFastWeaponTransitions.GetBool() && (state == WS_RAISE || state == WS_LOWER || state == WS_HOLDSTER))
 		ticks *= 2;
 
     if(frame->delay == 0)
@@ -434,6 +434,8 @@ void kexPlayerWeapon::DrawFlame(void)
         y += bob_y + weaponInfo->offsetY;
         x += (owner->Actor()->Roll()*64);
         y += 8;
+		if (!kexGame::cLocal->cvarShowHUD.GetBool())
+			y += 24.0f;
         
         kexVec3 start(x, y + h, 0);
         kexVec3 end(x + (owner->Actor()->Roll()*128), y, 0);

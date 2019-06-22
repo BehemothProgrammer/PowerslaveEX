@@ -244,6 +244,9 @@ public:
     static bool                     bShowSoundStats;
     static kexCvar                  cvarShowMovieIntro;
     static kexCvar                  cvarShowHUD;
+    static kexCvar                  cvarShowHUDFlashes;
+    static kexCvar                  cvarFastWeaponTransitions;
+    static kexCvar                  cvarBetterAutoAim;
     
 private:
     void                            LoadNewMap(void);
